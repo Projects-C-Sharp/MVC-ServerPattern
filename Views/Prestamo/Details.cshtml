@@ -1,0 +1,44 @@
+@model BookstoreSistem.Models.Prestamo
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>Detalles del Préstamo</h4>
+                </div>
+
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Id</dt>
+                        <dd class="col-sm-8">@Model.Id</dd>
+
+                        <dt class="col-sm-4">Usuario</dt>
+                        <dd class="col-sm-8">@Model.Usuario?.Nombre @Model.Usuario?.Apellido</dd>
+
+                        <dt class="col-sm-4">Libro</dt>
+                        <dd class="col-sm-8">@Model.Libro?.Titulo</dd>
+
+                        <dt class="col-sm-4">Fecha de Préstamo</dt>
+                        <dd class="col-sm-8">@Model.FechaPrestamo.ToShortDateString()</dd>
+
+                        <dt class="col-sm-4">Fecha de Devolución</dt>
+                        <dd class="col-sm-8">@(Model.FechaDevolucion?.ToShortDateString() ?? "No devuelto")</dd>
+                    </dl>
+                </div>
+
+                <div class="card-footer text-center">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                        Editar
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary btn-sm">
+                        Volver a la Lista
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+@model BookstoreSistem.Models.Prestamo
+
+<div class="content vh-100 d-flex align-items-center justify-content-center">
+    <div class="row">
+        <div class="col-lg-12 shadow shadow-lg p-5 d-flex flex-column align-items-center">
+
+            <h2>Crear Préstamo</h2>
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["Message"]
+                </div>
+            }
+
+            <form asp-action="Create" method="post" class="form d-flex flex-column align-items-center justify-content-center">
+
+                @Html.AntiForgeryToken()
+
+                <div class="form-group mt-3 w-100">
+                    <label asp-for="UsuarioId">Usuario</label>
+                    <select asp-for="UsuarioId" class="form-control" asp-items="ViewBag.Usuarios"></select>
+                </div>
+
+                <div class="form-group mt-3 w-100">
+                    <label asp-for="LibroId">Libro</label>
+                    <select asp-for="LibroId" class="form-control" asp-items="ViewBag.Libros"></select>
+                </div>
+
+                <div class="mt-4 d-flex gap-3">
+                    <button type="submit" class="btn btn-primary">Crear</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

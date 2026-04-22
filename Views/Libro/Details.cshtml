@@ -1,0 +1,44 @@
+@model BookstoreSistem.Models.Libro
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>Detalles del Libro</h4>
+                </div>
+
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Id</dt>
+                        <dd class="col-sm-8">@Model.Id</dd>
+
+                        <dt class="col-sm-4">Título</dt>
+                        <dd class="col-sm-8">@Model.Titulo</dd>
+
+                        <dt class="col-sm-4">Autor</dt>
+                        <dd class="col-sm-8">@Model.Autor</dd>
+
+                        <dt class="col-sm-4">Género</dt>
+                        <dd class="col-sm-8">@Model.Genero</dd>
+
+                        <dt class="col-sm-4">Año de Publicación</dt>
+                        <dd class="col-sm-8">@Model.AnioPublicacion</dd>
+                    </dl>
+                </div>
+
+                <div class="card-footer text-center">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                        Editar
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary btn-sm">
+                        Volver a la Lista
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
