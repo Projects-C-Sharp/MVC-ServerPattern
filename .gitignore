@@ -2,4 +2,4 @@ bin/
 obj/
 .idea/
 .vscode/
-appsettings.json
+#appsettings.json
