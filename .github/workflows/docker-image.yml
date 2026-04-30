@@ -1,4 +1,4 @@
-name: Docker Image CI + Deploy VPS
+name: Docker CI/CD + Deploy VPS
 
 on:
   push:
@@ -11,32 +11,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout del repo
       - uses: actions/checkout@v4
 
-      # 1. Build Docker image
-      - name: Build Docker image
-        id: build
+      # Login a Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build y push de la imagen
+      - name: Build and push Docker image
+        id: docker_build
         run: |
-          IMAGE_TAG=my-image-name:$(date +%s)
-          docker build . --file Dockerfile --tag $IMAGE_TAG
+          echo "Definiendo nombre y tag de la imagen"
+          IMAGE_NAME=yourdockerhubuser/my-image-name
+          IMAGE_TAG=$IMAGE_NAME:$(date +%s)
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-      # 2. Deploy to VPS via SSH
+          echo "Construyendo la imagen Docker"
+          docker build . -t $IMAGE_TAG
+
+          echo "Subiendo la imagen a Docker Hub"
+          docker push $IMAGE_TAG
+
+      # Deploy en VPS vía SSH
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }} # mejor usar key
+          password: ${{ secrets.VPS_PASSWORD }}
           port: 22
           script: |
-            
-            echo "Entrando a carpeta del proyecto"
+            echo "Entrando a la carpeta del proyecto"
             cd /Ismael/
 
-            echo "Deteniendo contenedor previo (si existe)"
+            echo "Deteniendo contenedor previo si existe"
             docker stop my-container || true
             docker rm my-container || true
+
+            echo "Haciendo pull de la nueva imagen"
+            docker pull ${{ env.IMAGE_TAG }}
 
             echo "Ejecutando nuevo contenedor"
             docker run -d -p ${{ secrets.APP_PORT }}:${{ secrets.APP_PORT }} \
@@ -63,14 +80,15 @@ jobs:
             echo "Activando sitio en Nginx"
             sudo ln -sf /etc/nginx/sites-available/my-site /etc/nginx/sites-enabled/my-site
 
-            echo "Verificando configuración Nginx"
+            echo "Verificando configuración de Nginx"
             sudo nginx -t
 
             echo "Reiniciando Nginx"
             sudo systemctl reload nginx
 
-            echo "Certbot y SSL"
-
-            sudo certbot --nginx -d ${{ secrets.DOMAIN }}
+            echo "Instalando Certbot y configurando SSL"
+            sudo apt-get update
+            sudo apt-get install -y certbot python3-certbot-nginx
+            sudo certbot --nginx -d ${{ secrets.DOMAIN }} --non-interactive --agree-tos -m ${{ secrets.EMAIL }}
 
             echo "Deploy completado"
