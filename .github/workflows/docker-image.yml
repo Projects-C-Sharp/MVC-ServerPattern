@@ -11,23 +11,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout del repo
+      # 1️ Checkout del repo
       - uses: actions/checkout@v4
 
-      # Login a Docker Hub
+      # 2️ Login a Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build y push de la imagen
+      # 3️ Build y push de la imagen
       - name: Build and push Docker image
         id: docker_build
         run: |
           echo "Definiendo nombre y tag de la imagen"
-          IMAGE_NAME=$DOCKER_USER/my-image-name
-          IMAGE_TAG=$IMAGE_NAME:$(date +%s)
+          IMAGE_NAME=${{ secrets.DOCKER_USER }}/my-image-name
+          IMAGE_TAG=${IMAGE_NAME}:$(git rev-parse --short HEAD)
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
       
           echo "Construyendo la imagen Docker"
@@ -35,9 +35,8 @@ jobs:
       
           echo "Subiendo la imagen a Docker Hub"
           docker push $IMAGE_TAG
-          
 
-      # Deploy en VPS vía SSH
+      # 4️ Deploy en VPS vía SSH
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
