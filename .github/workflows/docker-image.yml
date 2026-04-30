@@ -26,15 +26,16 @@ jobs:
         id: docker_build
         run: |
           echo "Definiendo nombre y tag de la imagen"
-          IMAGE_NAME=yourdockerhubuser/my-image-name
+          IMAGE_NAME=$DOCKER_USER/my-image-name
           IMAGE_TAG=$IMAGE_NAME:$(date +%s)
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-
+      
           echo "Construyendo la imagen Docker"
           docker build . -t $IMAGE_TAG
-
+      
           echo "Subiendo la imagen a Docker Hub"
           docker push $IMAGE_TAG
+          
 
       # Deploy en VPS vía SSH
       - name: Deploy to VPS
