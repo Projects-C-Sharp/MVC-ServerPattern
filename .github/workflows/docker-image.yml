@@ -69,10 +69,8 @@ jobs:
             echo "Reiniciando Nginx"
             sudo systemctl reload nginx
 
-            echo "Instalando Certbot y SSL"
-            sudo apt-get update
-            sudo apt-get install -y certbot python3-certbot-nginx
+            echo "Certbot y SSL"
 
-            sudo certbot --nginx -d ${{ secrets.DOMAIN }} --non-interactive --agree-tos -m ${{ secrets.EMAIL }}
+            sudo certbot --nginx -d ${{ secrets.DOMAIN }}
 
             echo "Deploy completado"
