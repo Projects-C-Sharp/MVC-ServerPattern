@@ -1,0 +1,78 @@
+name: Docker Image CI + Deploy VPS
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Build Docker image
+      - name: Build Docker image
+        id: build
+        run: |
+          IMAGE_TAG=my-image-name:$(date +%s)
+          docker build . --file Dockerfile --tag $IMAGE_TAG
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      # 2. Deploy to VPS via SSH
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }} # mejor usar key
+          port: 22
+          script: |
+            
+            echo "Entrando a carpeta del proyecto"
+            cd /Ismael/
+
+            echo "Deteniendo contenedor previo (si existe)"
+            docker stop my-container || true
+            docker rm my-container || true
+
+            echo "Ejecutando nuevo contenedor"
+            docker run -d -p ${{ secrets.APP_PORT }}:${{ secrets.APP_PORT }} \
+              --name my-container \
+              ${{ env.IMAGE_TAG }}
+
+            echo "Creando configuración Nginx"
+            sudo tee /etc/nginx/sites-available/my-site <<EOF
+            server {
+                listen 80;
+                server_name ${{ secrets.DOMAIN }};
+
+                location / {
+                    proxy_pass http://localhost:${{ secrets.APP_PORT }};
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host \$host;
+                    proxy_cache_bypass \$http_upgrade;
+                }
+            }
+            EOF
+
+            echo "Activando sitio en Nginx"
+            sudo ln -sf /etc/nginx/sites-available/my-site /etc/nginx/sites-enabled/my-site
+
+            echo "Verificando configuración Nginx"
+            sudo nginx -t
+
+            echo "Reiniciando Nginx"
+            sudo systemctl reload nginx
+
+            echo "Instalando Certbot y SSL"
+            sudo apt-get update
+            sudo apt-get install -y certbot python3-certbot-nginx
+
+            sudo certbot --nginx -d ${{ secrets.DOMAIN }} --non-interactive --agree-tos -m ${{ secrets.EMAIL }}
+
+            echo "Deploy completado"
