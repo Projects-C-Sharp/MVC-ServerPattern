@@ -61,7 +61,7 @@ jobs:
               ${{ env.IMAGE_TAG }}
 
             echo "Creando configuración Nginx"
-            sudo tee /etc/nginx/sites-available/my-site <<EOF
+            sudo tee /etc/nginx/sites-available/docker-mvc <<EOF
             server {
                 listen 80;
                 server_name ${{ secrets.DOMAIN }};
@@ -78,7 +78,7 @@ jobs:
             EOF
 
             echo "Activando sitio en Nginx"
-            sudo ln -sf /etc/nginx/sites-available/my-site /etc/nginx/sites-enabled/my-site
+            sudo ln -sf /etc/nginx/sites-available/docker-mvc /etc/nginx/sites-enabled/
 
             echo "Verificando configuración de Nginx"
             sudo nginx -t
